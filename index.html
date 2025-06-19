@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЭкоЮг - Экологичные товары</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/jpeg" href="фавикон.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#f8fafc',
+                        foreground: '#1e293b',
+                        card: '#ffffff',
+                        'card-foreground': '#1e293b',
+                        primary: '#16a34a',
+                        'primary-foreground': '#ffffff',
+                        secondary: '#dcfce7',
+                        'secondary-foreground': '#166534',
+                        accent: '#7dd3fc',
+                        'accent-foreground': '#0369a1',
+                        destructive: '#ef4444',
+                        'destructive-foreground': '#ffffff',
+                        border: '#bbf7d0',
+                        input: '#bbf7d0',
+                        ring: '#16a34a',
+                    },
+                    borderRadius: {
+                        DEFAULT: '0.75rem',
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        card: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        button: '0 4px 14px rgba(22, 163, 74, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            border-color: hsl(141, 76%, 85%);
+        }
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Montserrat', sans-serif;
+        }
+        main {
+            flex-grow: 1;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cart-item:hover {
+            background-color: #f0fdf4;
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #86efac;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4ade80;
+        }
+        
+        /* Анимация загрузки */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Плавные переходы для модальных окон */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 200ms, transform 200ms;
+        }
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 200ms, transform 200ms;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div class="container flex h-16 max-w-screen-2xl items-center px-4">
+            <a href="javascript:window.location.reload()" class="mr-6 flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary">
+                    <path d="M12 2v4"></path>
+                    <path d="m16 6 3-3"></path>
+                    <path d="M18 9h4"></path>
+                    <path d="m16 18 3 3"></path>
+                    <path d="M12 22v-4"></path>
+                    <path d="m8 18-3 3"></path>
+                    <path d="M6 15H2"></path>
+                    <path d="m8 6-3-3"></path>
+                    <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+                <span class="font-bold text-xl bg-gradient-to-r from-primary to-green-600 bg-clip-text text-transparent">
+                    ЭкоЮг
+                </span>
+            </a>
+            <nav class="hidden md:flex space-x-6">
+                <a href="javascript:window.location.reload()" class="text-sm font-medium hover:text-primary transition-colors">Главная</a>
+                <a href="#about" class="text-sm font-medium hover:text-primary transition-colors">О компании</a>
+                <a href="#products" class="text-sm font-medium hover:text-primary transition-colors">Товары</a>
+            </nav>
+            <div class="ml-auto flex items-center space-x-4">
+                <button id="user-button" class="relative p-2 rounded-full hover:bg-secondary hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+                <button id="cart-button" class="relative p-2 rounded-full hover:bg-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-primary">
+                        <circle cx="8" cy="21" r="1"></circle>
+                        <circle cx="19" cy="21" r="1"></circle>
+                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                    </svg>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                </button>
+                <button id="auth-button" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button font-medium">
+                    Войти
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-grow">
+        <!-- Главная страница -->
+        <div id="main-content">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-r from-primary to-green-600 text-white py-16 md:py-24">
+                <div class="container mx-auto px-4 text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Экологичные товары для вашего дома</h1>
+                    <p class="text-xl opacity-90 max-w-2xl mx-auto mb-8">Безопасные для природы и здоровья продукты от ООО "ЭкоЮг"</p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#products" class="px-6 py-3 bg-white text-primary rounded-lg hover:bg-white/90 transition-colors shadow-button font-medium">
+                            В каталог
+                        </a>
+                
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Features Section -->
+            <section class="py-12 bg-white">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="text-center p-6 rounded-xl hover:shadow-card transition-shadow">
+                            <div class="mx-auto w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-primary">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Экологично</h3>
+                            <p class="text-muted-foreground">Все товары безопасны для природы и полностью биоразлагаемы</p>
+                        </div>
+                        <div class="text-center p-6 rounded-xl hover:shadow-card transition-shadow">
+                            <div class="mx-auto w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-primary">
+                                    <path d="M12 2v4"></path>
+                                    <path d="m16 6 3-3"></path>
+                                    <path d="M18 9h4"></path>
+                                    <path d="m16 18 3 3"></path>
+                                    <path d="M12 22v-4"></path>
+                                    <path d="m8 18-3 3"></path>
+                                    <path d="M6 15H2"></path>
+                                    <path d="m8 6-3-3"></path>
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Качественно</h3>
+                            <p class="text-muted-foreground">Тщательный отбор поставщиков и контроль качества</p>
+                        </div>
+                        <div class="text-center p-6 rounded-xl hover:shadow-card transition-shadow">
+                            <div class="mx-auto w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-primary">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Надежно</h3>
+                            <p class="text-muted-foreground">Гарантия на все товары и быстрая доставка</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Products Section -->
+            <section id="products" class="py-12 bg-background">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2">
+                            <div class="py-8" id="eco-catalog">
+                                <!-- Catalog content will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-8 lg:sticky lg:top-24 self-start">
+                            <div class="bg-white rounded-xl shadow-card border border-border p-6" id="shopping-cart">
+                                <!-- Shopping cart will be loaded here -->
+                            </div>
+                            <div class="bg-white rounded-xl shadow-card border border-border p-6" id="eco-tips">
+                                <!-- Eco tips will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+        </div>
+        
+        <!-- Страница "О компании" -->
+        <div id="about-content" class="hidden">
+            <section class="bg-white py-16">
+                <div class="container mx-auto px-4">
+                    <h1 class="text-4xl font-bold mb-8 text-center">О компании</h1>
+                    
+                    <div class="max-w-4xl mx-auto">
+                        <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
+                            <div>
+                                <h2 class="text-2xl font-bold mb-4">Наша миссия</h2>
+                                <p class="text-lg text-gray-700 mb-6">
+                                    Мы стремимся сделать экологичный образ жизни доступным для каждого, предлагая качественные товары, которые не вредят природе и здоровью людей.
+                                </p>
+                                <p class="text-gray-600">
+                                    Основанная в 2018 году, компания "ЭкоЮг" стала одним из первых эко-магазинов в Краснодарском крае, предлагающим широкий ассортимент экологичных товаров для дома и быта.
+                                </p>
+                            </div>
+                            <div class="bg-green-50 rounded-xl p-6">
+                                <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Экологичный магазин" class="rounded-lg shadow-md w-full h-auto">
+                            </div>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
+                            <div class="order-1 md:order-2">
+                                <h2 class="text-2xl font-bold mb-4">Наши принципы</h2>
+                                <ul class="space-y-4 text-gray-700">
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Используем только натуральные и биоразлагаемые материалы</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Минимизируем пластиковую упаковку</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Поддерживаем местных производителей</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Продвигаем идеи осознанного потребления</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="order-2 md:order-1">
+                                <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Экологичные продукты" class="rounded-lg shadow-md w-full h-auto">
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 rounded-xl p-8 text-center">
+                            <h2 class="text-2xl font-bold mb-4">Наша команда</h2>
+                            <p class="text-gray-700 mb-6 max-w-2xl mx-auto">
+                                Мы - команда энтузиастов, объединенных идеей сделать мир чище. Наши эксперты тщательно отбирают каждый товар, чтобы предложить вам только лучшее.
+                            </p>
+                            <div class="grid md:grid-cols-3 gap-6 mt-8">
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <div class="h-24 w-24 mx-auto mb-4 rounded-full overflow-hidden">
+                                        <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Основатель" class="w-full h-full object-cover">
+                                    </div>
+                                    <h3 class="font-bold">Анна Иванова</h3>
+                                    <p class="text-sm text-gray-600">Основатель компании</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <div class="h-24 w-24 mx-auto mb-4 rounded-full overflow-hidden">
+                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Менеджер" class="w-full h-full object-cover">
+                                    </div>
+                                    <h3 class="font-bold">Дмитрий Петров</h3>
+                                    <p class="text-sm text-gray-600">Менеджер по закупкам</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <div class="h-24 w-24 mx-auto mb-4 rounded-full overflow-hidden">
+                                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Эколог" class="w-full h-full object-cover">
+                                    </div>
+                                    <h3 class="font-bold">Елена Смирнова</h3>
+                                    <p class="text-sm text-gray-600">Эксперт-эколог</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Auth Modal -->
+        <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden px-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-fadeIn">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-2xl font-bold" id="auth-modal-title">Вход</h2>
+                    <button class="close-auth-modal p-1 rounded-full hover:bg-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6">
+                    <div id="login-form">
+                        <div class="grid gap-4">
+                            <div class="grid gap-2">
+                                <label for="login-email" class="block text-sm font-medium">Email</label>
+                                <input id="login-email" type="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="example@mail.ru" required>
+                            </div>
+                            <div class="grid gap-2">
+                                <label for="login-password" class="block text-sm font-medium">Пароль</label>
+                                <input id="login-password" type="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="••••••••" required>
+                            </div>
+                            <button id="login-btn" class="w-full mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button">
+                                Войти
+                            </button>
+                            <div class="text-center text-sm mt-4">
+                                <span class="text-muted-foreground">Нет аккаунта? </span>
+                                <button id="switch-to-register" class="text-primary hover:underline">Зарегистрироваться</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="register-form" class="hidden">
+                        <div class="grid gap-4">
+                            <div class="grid gap-2">
+                                <label for="register-name" class="block text-sm font-medium">Имя</label>
+                                <input id="register-name" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Иван Иванов" required>
+                            </div>
+                            <div class="grid gap-2">
+                                <label for="register-email" class="block text-sm font-medium">Email</label>
+                                <input id="register-email" type="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="example@mail.ru" required>
+                            </div>
+                            <div class="grid gap-2">
+                                <label for="register-password" class="block text-sm font-medium">Пароль</label>
+                                <input id="register-password" type="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="••••••••" required>
+                            </div>
+                            <div class="grid gap-2">
+                                <label for="register-confirm-password" class="block text-sm font-medium">Подтвердите пароль</label>
+                                <input id="register-confirm-password" type="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="••••••••" required>
+                            </div>
+                            <button id="register-btn" class="w-full mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button">
+                                Зарегистрироваться
+                            </button>
+                            <div class="text-center text-sm mt-4">
+                                <span class="text-muted-foreground">Уже есть аккаунт? </span>
+                                <button id="switch-to-login" class="text-primary hover:underline">Войти</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Profile Modal -->
+        <div id="user-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden px-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-fadeIn">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Мой профиль</h2>
+                    <button class="close-user-modal p-1 rounded-full hover:bg-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-primary">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg" id="user-name">Иван Иванов</h3>
+                            <p class="text-muted-foreground" id="user-email">example@mail.ru</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        
+                        <button id="logout-btn" class="w-full px-4 py-3 border rounded-lg hover:bg-secondary transition-colors text-left flex items-center gap-3 text-destructive">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Выйти
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Checkout Modal -->
+        <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden px-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col animate-fadeIn">
+                <div class="p-6 border-b">
+                    <h2 class="text-2xl font-bold">Оформление заказа</h2>
+                    <p class="text-muted-foreground">Проверьте ваш заказ и завершите покупку</p>
+                </div>
+                
+                <div class="overflow-y-auto flex-grow p-6">
+                    <div class="space-y-6">
+                        <section>
+                            <h3 class="text-lg font-semibold mb-4">Состав заказа</h3>
+                            <div id="checkout-items">
+                                <!-- Cart items will be loaded here -->
+                            </div>
+                            <div class="mt-6 space-y-2" id="order-totals">
+                                <!-- Order totals will be loaded here -->
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 class="text-lg font-semibold mb-4">Данные для доставки</h3>
+                            <div class="grid gap-4">
+                                <div class="grid gap-2">
+                                    <label for="name" class="block text-sm font-medium">ФИО</label>
+                                    <input id="name" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Иванов Иван Иванович" required>
+                                </div>
+                                <div class="grid gap-2">
+                                    <label for="address" class="block text-sm font-medium">Адрес</label>
+                                    <input id="address" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="ул. Примерная, д. 123, кв. 45" required>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid gap-2">
+                                        <label for="city" class="block text-sm font-medium">Город</label>
+                                        <input id="city" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Краснодар" required>
+                                    </div>
+                                    <div class="grid gap-2">
+                                        <label for="zip" class="block text-sm font-medium">Индекс</label>
+                                        <input id="zip" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="350000" required>
+                                    </div>
+                                </div>
+                                <div class="grid gap-2">
+                                    <label for="phone" class="block text-sm font-medium">Телефон</label>
+                                    <input id="phone" type="tel" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="+7 (900) 123-45-67" required>
+                                </div>
+                                <div class="grid gap-2">
+                                    <label for="email" class="block text-sm font-medium">Email</label>
+                                    <input id="email" type="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="example@mail.ru" required>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 class="text-lg font-semibold mb-4">Способ оплаты</h3>
+                            <div class="grid gap-4">
+                                <div class="flex items-center space-x-4 p-4 border rounded-lg cursor-pointer hover:bg-secondary/50">
+                                    <input type="radio" id="card-payment" name="payment" class="text-primary focus:ring-primary" checked>
+                                    <label for="card-payment" class="flex-1 cursor-pointer">Банковская карта</label>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                                    </svg>
+                                </div>
+                                <div class="flex items-center space-x-4 p-4 border rounded-lg cursor-pointer hover:bg-secondary/50">
+                                    <input type="radio" id="cash-payment" name="payment" class="text-primary focus:ring-primary">
+                                    <label for="cash-payment" class="flex-1 cursor-pointer">Наличными при получении</label>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-primary">
+                                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div id="card-details" class="mt-4 grid gap-4">
+                                <div class="grid gap-2">
+                                    <label for="card-number" class="block text-sm font-medium">Номер карты</label>
+                                    <input id="card-number" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid gap-2">
+                                        <label for="expiry" class="block text-sm font-medium">Срок действия</label>
+                                        <input id="expiry" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="12/25" required>
+                                    </div>
+                                    <div class="grid gap-2">
+                                        <label for="cvc" class="block text-sm font-medium">CVC</label>
+                                        <input id="cvc" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="123" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                
+                <div class="p-6 border-t flex justify-end gap-4">
+                    <button id="cancel-checkout" class="px-6 py-3 border rounded-lg hover:bg-secondary transition-colors">Отмена</button>
+                    <button id="place-order" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button flex items-center justify-center gap-2">
+                        <span>Оформить заказ</span>
+                        <svg id="order-spinner" class="hidden h-5 w-5 text-white loading-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Success Modal -->
+        <div id="order-success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden px-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-fadeIn text-center p-8">
+                <div class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-10 w-10 text-green-600">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">Заказ оформлен!</h2>
+                <p class="text-muted-foreground mb-6">Спасибо за покупку. Подробности заказа отправлены на ваш email.</p>
+                <button id="close-success-modal" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button">
+                    Понятно
+                </button>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg hidden animate-fadeIn">
+            <div class="flex items-center">
+                <span id="toast-message"></span>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="border-t border-border/40 py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-bold text-lg mb-4">ООО "ЭкоЮг"</h3>
+                    <p class="text-sm text-muted-foreground">Экологичные товары для дома и быта</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fa-vk"></i>
+                        </a>
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fab fegram"></i>
+                        </a>
+                        <a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+                            <i class="fab fatagram"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Каталог</h4>
+            
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Информация</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#about" class="hover:text-primary transition-colors">О компании</a></li>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Контакты</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>Ст. Ленинградская, ул. Юбилейная, 3</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            <span>+7 (861) 123-45-67</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <span>info@eco-yug.ru</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-border/40 mt-8 pt-8 text-center text-sm text-muted-foreground">
+                © 2025 ООО "ЭкоЮг". Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Real product data for eco store
+        const ecoProducts = [
+            {
+                id: '1',
+                name: 'Набор эко-моющих средств',
+                description: 'Комплект из 3 экологичных средств для уборки дома без химии. Безопасно для детей и животных.',
+                price: 1499,
+                imageUrl: 'моющее.jpg',
+                dataEcoHint: 'эко моющие средства',
+                category: 'Бытовая химия',
+                sizes: ['Набор'],
+                ecoRating: 5
+            },
+            {
+                id: '2',
+                name: 'Бамбуковая зубная щетка',
+                description: 'Экологичная зубная щетка из бамбука с натуральной щетиной. Полностью биоразлагаемая.',
+                price: 299,
+                imageUrl: 'щетка.jpg',
+                dataEcoHint: 'бамбуковая зубная щетка',
+                category: 'Гигиена',
+                sizes: ['1 шт'],
+                ecoRating: 5
+            },
+            {
+                id: '3',
+                name: 'Многоразовые бамбуковые салфетки',
+                description: 'Набор из 20 многоразовых салфеток из бамбука. Альтернатива бумажным полотенцам.',
+                price: 899,
+                imageUrl: 'салфетки.jpg',
+                dataEcoHint: 'многоразовые салфетки',
+                category: 'Для дома',
+                sizes: ['20 шт'],
+                ecoRating: 4
+            },
+            {
+                id: '4',
+                name: 'Органическое мыло ручной работы',
+                description: 'Натуральное мыло с эфирными маслами лаванды. Без SLS, парабенов и искусственных красителей.',
+                price: 399,
+                imageUrl: 'мыло.jpg',
+                dataEcoHint: 'органическое мыло',
+                category: 'Гигиена',
+                sizes: ['100 г'],
+                ecoRating: 5
+            },
+            {
+                id: '5',
+                name: 'Эко-сумка для покупок',
+                description: 'Прочная хлопковая сумка для покупок с принтом. Альтернатива пластиковым пакетам.',
+                price: 499,
+                imageUrl: 'сумка.jpg',
+                dataEcoHint: 'эко сумка',
+                category: 'Аксессуары',
+                sizes: ['One Size'],
+                ecoRating: 5
+            },
+            {
+                id: '6',
+                name: 'Бутылка для воды из нержавеющей стали',
+                description: 'Многоразовая бутылка для воды из пищевой нержавеющей стали. Объем 750 мл.',
+                price: 1299,
+                imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+                dataEcoHint: 'бутылка для воды',
+                category: 'Аксессуары',
+                sizes: ['750 мл'],
+                ecoRating: 5
+            },
+            {
+                id: '7',
+                name: 'Органический стиральный порошок',
+                description: 'Экологичный стиральный порошок для всех типов тканей. Гипоаллергенный, без фосфатов.',
+                price: 799,
+                imageUrl: 'порошок.jpg',
+                dataEcoHint: 'органический порошок',
+                category: 'Бытовая химия',
+                sizes: ['1 кг'],
+                ecoRating: 4
+            },
+            {
+                id: '8',
+                name: 'Набор бамбуковых соломинок',
+                description: 'Набор из 6 бамбуковых соломинок для напитков с ершиком для чистки. Многоразовые и экологичные.',
+                price: 599,
+                imageUrl: 'соломинки.jpeg',
+                dataEcoHint: 'бамбуковые соломинки',
+                category: 'Для дома',
+                sizes: ['6 шт'],
+                ecoRating: 5
+            },
+        ];
+
+
+        const AllProductCategories = ["Бытовая химия", "Гигиена", "Для дома", "Аксессуары", "Продукты"];
+        const AllProductSizes = ["1 шт", "Набор", "20 шт", "100 г", "750 мл", "1 кг", "6 шт", "One Size"];
+
+        // Shopping cart state
+        let cartItems = JSON.parse(localStorage.getItem('ecoYugCart')) || [];
+        let selectedCategory = "All";
+        let selectedSize = "All";
+        let searchTerm = "";
+        
+        // User state
+        let currentUser = JSON.parse(localStorage.getItem('ecoYugUser')) || null;
+
+        // DOM elements
+        const ecoCatalogEl = document.getElementById('eco-catalog');
+        const shoppingCartEl = document.getElementById('shopping-cart');
+        const ecoTipsEl = document.getElementById('eco-tips');
+        const checkoutModalEl = document.getElementById('checkout-modal');
+        const checkoutItemsEl = document.getElementById('checkout-items');
+        const orderTotalsEl = document.getElementById('order-totals');
+        const cancelCheckoutBtn = document.getElementById('cancel-checkout');
+        const placeOrderBtn = document.getElementById('place-order');
+        const toastEl = document.getElementById('toast');
+        const toastMessageEl = document.getElementById('toast-message');
+        const cartButton = document.getElementById('cart-button');
+        const cartCount = document.getElementById('cart-count');
+        const cardDetails = document.getElementById('card-details');
+        const mainContent = document.getElementById('main-content');
+        const aboutContent = document.getElementById('about-content');
+        const authButton = document.getElementById('auth-button');
+        const userButton = document.getElementById('user-button');
+        const authModal = document.getElementById('auth-modal');
+        const userModal = document.getElementById('user-modal');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const orderSuccessModal = document.getElementById('order-success-modal');
+        const closeSuccessModal = document.getElementById('close-success-modal');
+        const userNameEl = document.getElementById('user-name');
+        const userEmailEl = document.getElementById('user-email');
+        const orderSpinner = document.getElementById('order-spinner');
+
+        // Format price with rubles
+        function formatPrice(price) {
+            return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price);
+        }
+
+        // Initialize the app
+        function init() {
+            renderEcoCatalog();
+            renderShoppingCart();
+            renderEcoTips();
+            updateCartCount();
+            updateAuthUI();
+            
+            // Load cart from local storage
+            const savedCart = localStorage.getItem('ecoYugCart');
+            if (savedCart) {
+                cartItems = JSON.parse(savedCart);
+                renderShoppingCart();
+                renderEcoTips();
+                updateCartCount();
+            }
+            
+            // Event listeners
+            cancelCheckoutBtn.addEventListener('click', () => {
+                checkoutModalEl.classList.add('hidden');
+            });
+            
+            placeOrderBtn.addEventListener('click', handlePlaceOrder);
+            
+            cartButton.addEventListener('click', () => {
+                const cartElement = document.querySelector('.lg\\:sticky');
+                cartElement.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // Handle navigation
+            document.querySelectorAll('a[href="#about"]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mainContent.classList.add('hidden');
+                    aboutContent.classList.remove('hidden');
+                    window.scrollTo(0, 0);
+                });
+            });
+
+            document.querySelectorAll('a[href="javascript:window.location.reload()"]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (e.target.getAttribute('href') === 'javascript:window.location.reload()') {
+                        e.preventDefault();
+                        mainContent.classList.remove('hidden');
+                        aboutContent.classList.add('hidden');
+                        window.scrollTo(0, 0);
+                    }
+                });
+            });
+            
+            // Auth modal handlers
+            authButton.addEventListener('click', () => {
+                if (currentUser) {
+                    userModal.classList.remove('hidden');
+                } else {
+                    authModal.classList.remove('hidden');
+                }
+            });
+            
+            userButton.addEventListener('click', () => {
+                userModal.classList.remove('hidden');
+            });
+            
+            document.querySelectorAll('.close-auth-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    authModal.classList.add('hidden');
+                });
+            });
+            
+            document.querySelectorAll('.close-user-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    userModal.classList.add('hidden');
+                });
+            });
+            
+            switchToRegister.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                document.getElementById('auth-modal-title').textContent = 'Регистрация';
+            });
+            
+            switchToLogin.addEventListener('click', () => {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                document.getElementById('auth-modal-title').textContent = 'Вход';
+            });
+            
+            loginBtn.addEventListener('click', handleLogin);
+            registerBtn.addEventListener('click', handleRegister);
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            closeSuccessModal.addEventListener('click', () => {
+                orderSuccessModal.classList.add('hidden');
+            });
+            
+            // Learn more button
+            document.getElementById('learn-more').addEventListener('click', () => {
+                document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+        
+        // Update auth UI based on user state
+        function updateAuthUI() {
+            if (currentUser) {
+                authButton.textContent = 'Выйти';
+                authButton.classList.add('hidden');
+                userButton.classList.remove('hidden');
+                userNameEl.textContent = currentUser.name;
+                userEmailEl.textContent = currentUser.email;
+            } else {
+                authButton.textContent = 'Войти';
+                authButton.classList.remove('hidden');
+                userButton.classList.add('hidden');
+            }
+        }
+        
+        // Handle user login
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            // Simple validation
+            if (!email || !password) {
+                showToast('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                // Check if user exists in localStorage
+                const users = JSON.parse(localStorage.getItem('ecoYugUsers')) || [];
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    currentUser = {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email
+                    };
+                    localStorage.setItem('ecoYugUser', JSON.stringify(currentUser));
+                    
+                    authModal.classList.add('hidden');
+                    updateAuthUI();
+                    showToast('Вход выполнен успешно');
+                    
+                    // Prefill checkout form if cart is not empty
+                    if (cartItems.length > 0) {
+                        document.getElementById('name').value = currentUser.name;
+                        document.getElementById('email').value = currentUser.email;
+                    }
+                } else {
+                    showToast('Неверный email или пароль', 'error');
+                }
+            }, 500);
+        }
+        
+        // Handle user registration
+        function handleRegister() {
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            const confirmPassword = document.getElementById('register-confirm-password').value.trim();
+            
+            // Simple validation
+            if (!name || !email || !password || !confirmPassword) {
+                showToast('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Пожалуйста, введите корректный email', 'error');
+                return;
+            }
+            
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                // Check if user already exists
+                const users = JSON.parse(localStorage.getItem('ecoYugUsers')) || [];
+                const userExists = users.some(u => u.email === email);
+                
+                if (userExists) {
+                    showToast('Пользователь с таким email уже существует', 'error');
+                } else {
+                    const newUser = {
+                        id: Date.now().toString(),
+                        name,
+                        email,
+                        password // In a real app, passwords should be hashed
+                    };
+                    
+                    users.push(newUser);
+                    localStorage.setItem('ecoYugUsers', JSON.stringify(users));
+                    
+                    currentUser = {
+                        id: newUser.id,
+                        name: newUser.name,
+                        email: newUser.email
+                    };
+                    localStorage.setItem('ecoYugUser', JSON.stringify(currentUser));
+                    
+                    authModal.classList.add('hidden');
+                    updateAuthUI();
+                    showToast('Регистрация прошла успешно');
+                    
+                    // Prefill checkout form if cart is not empty
+                    if (cartItems.length > 0) {
+                        document.getElementById('name').value = currentUser.name;
+                        document.getElementById('email').value = currentUser.email;
+                    }
+                }
+            }, 500);
+        }
+        
+        // Handle user logout
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('ecoYugUser');
+            updateAuthUI();
+            userModal.classList.add('hidden');
+            showToast('Вы вышли из системы');
+        }
+
+        // Update cart count in header
+        function updateCartCount() {
+            const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+            if (totalItems > 0) {
+                cartCount.textContent = totalItems;
+                cartCount.classList.remove('hidden');
+            } else {
+                cartCount.classList.add('hidden');
+            }
+        }
+
+        // Render eco catalog
+        function renderEcoCatalog() {
+            const filteredProducts = ecoProducts.filter(product => {
+                const categoryMatch = selectedCategory === "All" || product.category === selectedCategory;
+                const sizeMatch = selectedSize === "All" || product.sizes.includes(selectedSize);
+                const searchMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    product.description.toLowerCase().includes(searchTerm.toLowerCase());
+                return categoryMatch && sizeMatch && searchMatch;
+            });
+
+            ecoCatalogEl.innerHTML = `
+                <div class="mb-8 p-6 bg-white rounded-xl shadow-card">
+                    <h2 class="text-2xl font-bold mb-6">Экологичные товары</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label for="search-term" class="block text-sm font-medium mb-2">Поиск</label>
+                            <input
+                                id="search-term"
+                                type="text"
+                                placeholder="Найти товары..."
+                                value="${searchTerm}"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            />
+                        </div>
+                        <div>
+                            <label for="category-filter" class="block text-sm font-medium mb-2">Категория</label>
+                            <select id="category-filter" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="All" ${selectedCategory === "All" ? 'selected' : ''}>Все категории</option>
+                                ${AllProductCategories.map(category => `
+                                    <option value="${category}" ${selectedCategory === category ? 'selected' : ''}>${category}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="size-filter" class="block text-sm font-medium mb-2">Размер/Кол-во</label>
+                            <select id="size-filter" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="All" ${selectedSize === "All" ? 'selected' : ''}>Все варианты</option>
+                                ${AllProductSizes.map(size => `
+                                    <option value="${size}" ${selectedSize === size ? 'selected' : ''}>${size}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <button id="reset-filters" class="px-4 py-2 border rounded-lg hover:bg-secondary transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                            Сбросить
+                        </button>
+                    </div>
+                </div>
+
+                ${filteredProducts.length > 0 ? `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        ${filteredProducts.map(product => `
+                            <div class="product-card bg-white rounded-xl overflow-hidden shadow-card border border-border transition-all duration-300">
+                                <div class="relative aspect-[3/4] w-full group">
+                                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-eco-hint="${product.dataEcoHint}" />
+                                    <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        ${'★'.repeat(product.ecoRating)}${'☆'.repeat(5 - product.ecoRating)}
+                                    </div>
+                                    <button data-product-id="${product.id}" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition-all duration-300">
+                                        Быстрый просмотр
+                                    </button>
+                                </div>
+                                <div class="p-4 flex-grow">
+                                    <h3 class="font-semibold text-lg mb-1">${product.name}</h3>
+                                    <p class="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                        ${product.description}
+                                    </p>
+                                    <p class="font-bold text-primary">${formatPrice(product.price)}</p>
+                                </div>
+                                <div class="p-4 border-t">
+                                    <button data-product-id="${product.id}" class="add-to-cart w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4">
+                                            <circle cx="8" cy="21" r="1"></circle>
+                                            <circle cx="19" cy="21" r="1"></circle>
+                                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                                        </svg>
+                                        В корзину
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <div class="text-center py-12 bg-white rounded-xl shadow-card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-12 w-12 text-muted-foreground mb-4">
+                            <path d="M3 6h13"></path>
+                            <path d="M11 6h7"></path>
+                            <path d="m18 6 1 13"></path>
+                            <path d="M6 9v11a2 2 0 0 0 2 2h7"></path>
+                            <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <h3 class="text-lg font-medium mb-1">Товары не найдены</h3>
+                        <p class="text-muted-foreground">Попробуйте изменить параметры поиска или фильтры</p>
+                    </div>
+                `}
+            `;
+
+            // Add event listeners to filter controls
+            document.getElementById('search-term').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderEcoCatalog();
+            });
+
+            document.getElementById('category-filter').addEventListener('change', (e) => {
+                selectedCategory = e.target.value;
+                renderEcoCatalog();
+            });
+
+            document.getElementById('size-filter').addEventListener('change', (e) => {
+                selectedSize = e.target.value;
+                renderEcoCatalog();
+            });
+
+            document.getElementById('reset-filters').addEventListener('click', () => {
+                searchTerm = "";
+                selectedCategory = "All";
+                selectedSize = "All";
+                renderEcoCatalog();
+            });
+
+            // Add event listeners to "Add to cart" buttons
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = e.target.getAttribute('data-product-id');
+                    addToCart(productId);
+                });
+            });
+
+            // Add event listeners to "Quick view" buttons
+            document.querySelectorAll('[data-product-id]').forEach(button => {
+                if (button.classList.contains('add-to-cart')) return;
+                button.addEventListener('click', (e) => {
+                    const productId = e.target.getAttribute('data-product-id');
+                    showProductModal(productId);
+                });
+            });
+        }
+
+        // Add product to cart
+        function addToCart(productId) {
+            const product = ecoProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cartItems.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cartItems.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    imageUrl: product.imageUrl
+                });
+            }
+
+            localStorage.setItem('ecoYugCart', JSON.stringify(cartItems));
+            renderShoppingCart();
+            updateCartCount();
+            showToast(`${product.name} добавлен в корзину`);
+        }
+
+        // Remove product from cart
+        function removeFromCart(productId) {
+            cartItems = cartItems.filter(item => item.id !== productId);
+            localStorage.setItem('ecoYugCart', JSON.stringify(cartItems));
+            renderShoppingCart();
+            updateCartCount();
+            showToast('Товар удален из корзины');
+        }
+
+        // Update product quantity in cart
+        function updateCartItemQuantity(productId, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
+
+            const item = cartItems.find(item => item.id === productId);
+            if (item) {
+                item.quantity = newQuantity;
+                localStorage.setItem('ecoYugCart', JSON.stringify(cartItems));
+                renderShoppingCart();
+                updateCartCount();
+            }
+        }
+
+        // Render shopping cart
+        function renderShoppingCart() {
+            const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 5000 ? 0 : 300;
+            const total = subtotal + deliveryFee;
+
+            shoppingCartEl.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg">Корзина</h3>
+                    <span class="text-sm text-muted-foreground">${totalItems} ${totalItems === 1 ? 'товар' : totalItems < 5 ? 'товара' : 'товаров'}</span>
+                </div>
+
+                ${cartItems.length > 0 ? `
+                    <div class="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                        ${cartItems.map(item => `
+                            <div class="cart-item flex items-start gap-4 p-3 border rounded-lg transition-colors">
+                                <img src="${item.imageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md" />
+                                <div class="flex-grow">
+                                    <h4 class="font-medium">${item.name}</h4>
+                                    <p class="text-sm text-muted-foreground">${formatPrice(item.price)}</p>
+                                    <div class="flex items-center mt-2">
+                                        <button class="quantity-btn px-2 py-1 border rounded-l-lg" data-id="${item.id}" data-action="decrease">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                        </button>
+                                        <input type="number" min="1" value="${item.quantity}" class="w-12 text-center border-t border-b border-r-0 border-l-0 py-1" data-id="${item.id}" />
+                                        <button class="quantity-btn px-2 py-1 border rounded-r-lg" data-id="${item.id}" data-action="increase">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button class="remove-btn p-1 text-destructive hover:bg-secondary rounded-full" data-id="${item.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18"></path>
+                                        <path d="m6 6 12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="space-y-3 border-t pt-4">
+                        <div class="flex justify-between">
+                            <span>Товары (${totalItems})</span>
+                            <span>${formatPrice(subtotal)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Доставка</span>
+                            <span>${deliveryFee === 0 ? 'Бесплатно' : formatPrice(deliveryFee)}</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-lg pt-2">
+                            <span>Итого</span>
+                            <span>${formatPrice(total)}</span>
+                        </div>
+                    </div>
+
+                    <button id="checkout-btn" class="w-full mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button">
+                        Оформить заказ
+                    </button>
+                ` : `
+                    <div class="text-center py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-12 w-12 text-muted-foreground mb-4">
+                            <circle cx="8" cy="21" r="1"></circle>
+                            <circle cx="19" cy="21" r="1"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                        </svg>
+                        <h3 class="text-lg font-medium mb-1">Ваша корзина пуста</h3>
+                        <p class="text-muted-foreground mb-4">Добавьте товары из каталога</p>
+                        <a href="#products" class="inline-block px-4 py-2 border rounded-lg hover:bg-secondary transition-colors">
+                            В каталог
+                        </a>
+                    </div>
+                `}
+            `;
+
+            // Add event listeners to cart buttons
+            if (cartItems.length > 0) {
+                document.getElementById('checkout-btn')?.addEventListener('click', () => {
+                    checkoutModalEl.classList.remove('hidden');
+                    renderCheckoutItems();
+                    
+                    // Prefill user data if logged in
+                    if (currentUser) {
+                        document.getElementById('name').value = currentUser.name;
+                        document.getElementById('email').value = currentUser.email;
+                    }
+                });
+
+                document.querySelectorAll('.remove-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const productId = e.target.closest('button').getAttribute('data-id');
+                        removeFromCart(productId);
+                    });
+                });
+
+                document.querySelectorAll('.quantity-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const productId = e.target.closest('button').getAttribute('data-id');
+                        const action = e.target.closest('button').getAttribute('data-action');
+                        const input = document.querySelector(`input[data-id="${productId}"]`);
+                        let newQuantity = parseInt(input.value);
+
+                        if (action === 'increase') {
+                            newQuantity += 1;
+                        } else {
+                            newQuantity -= 1;
+                        }
+
+                        updateCartItemQuantity(productId, newQuantity);
+                    });
+                });
+
+                document.querySelectorAll('input[data-id]').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const productId = e.target.getAttribute('data-id');
+                        const newQuantity = parseInt(e.target.value) || 1;
+                        updateCartItemQuantity(productId, newQuantity);
+                    });
+                });
+            }
+        }
+
+        // Render checkout items
+        function renderCheckoutItems() {
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 5000 ? 0 : 300;
+            const total = subtotal + deliveryFee;
+
+            checkoutItemsEl.innerHTML = `
+                ${cartItems.map(item => `
+                    <div class="flex items-center justify-between py-4 border-b">
+                        <div class="flex items-center gap-4">
+                            <img src="${item.imageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md" />
+                            <div>
+                                <h4 class="font-medium">${item.name}</h4>
+                                <p class="text-sm text-muted-foreground">${formatPrice(item.price)} × ${item.quantity}</p>
+                            </div>
+                        </div>
+                        <p class="font-medium">${formatPrice(item.price * item.quantity)}</p>
+                    </div>
+                `).join('')}
+            `;
+
+            orderTotalsEl.innerHTML = `
+                <div class="flex justify-between py-2">
+                    <span>Сумма заказа</span>
+                    <span>${formatPrice(subtotal)}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span>Доставка</span>
+                    <span>${deliveryFee === 0 ? 'Бесплатно' : formatPrice(deliveryFee)}</span>
+                </div>
+                <div class="flex justify-between font-bold text-lg pt-2 mt-2 border-t">
+                    <span>К оплате</span>
+                    <span>${formatPrice(total)}</span>
+                </div>
+            `;
+        }
+
+        // Handle place order
+        function handlePlaceOrder() {
+            const name = document.getElementById('name').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const zip = document.getElementById('zip').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').id;
+
+            // Simple validation
+            if (!name || !address || !city || !zip || !phone || !email) {
+                showToast('Пожалуйста, заполните все обязательные поля', 'error');
+                return;
+            }
+
+            // Validate email
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Пожалуйста, введите корректный email', 'error');
+                return;
+            }
+
+            // Validate phone (simple Russian format)
+            if (!/^(\+7|8)[0-9]{10}$/.test(phone.replace(/[^0-9+]/g, ''))) {
+                showToast('Пожалуйста, введите корректный номер телефона', 'error');
+                return;
+            }
+
+            // If card payment, validate card details
+            if (paymentMethod === 'card-payment') {
+                const cardNumber = document.getElementById('card-number').value.trim();
+                const expiry = document.getElementById('expiry').value.trim();
+                const cvc = document.getElementById('cvc').value.trim();
+
+                if (!cardNumber || !expiry || !cvc) {
+                    showToast('Пожалуйста, заполните данные карты', 'error');
+                    return;
+                }
+
+                // Simple card validation
+                if (!/^\d{16}$/.test(cardNumber.replace(/\s/g, ''))) {
+                    showToast('Пожалуйста, введите корректный номер карты', 'error');
+                    return;
+                }
+
+                if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                    showToast('Пожалуйста, введите корректный срок действия (MM/YY)', 'error');
+                    return;
+                }
+
+                if (!/^\d{3,4}$/.test(cvc)) {
+                    showToast('Пожалуйста, введите корректный CVC код', 'error');
+                    return;
+                }
+            }
+
+            // Show loading spinner
+            orderSpinner.classList.remove('hidden');
+            placeOrderBtn.disabled = true;
+
+            // Simulate order processing with API call
+            setTimeout(() => {
+                // Create order object
+                const order = {
+                    id: Date.now().toString(),
+                    date: new Date().toISOString(),
+                    items: cartItems,
+                    customer: {
+                        name,
+                        email,
+                        phone,
+                        address: `${city}, ${zip}, ${address}`
+                    },
+                    paymentMethod: paymentMethod === 'card-payment' ? 'Карта' : 'Наличные',
+                    subtotal: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    deliveryFee: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 5000 ? 0 : 300,
+                    status: 'Обрабатывается'
+                };
+
+                // Save order to localStorage (in a real app, this would be an API call)
+                const orders = JSON.parse(localStorage.getItem('ecoYugOrders')) || [];
+                orders.push(order);
+                localStorage.setItem('ecoYugOrders', JSON.stringify(orders));
+
+                // Simulate sending email notification
+                sendOrderConfirmationEmail(order);
+
+                // Hide loading spinner
+                orderSpinner.classList.add('hidden');
+                placeOrderBtn.disabled = false;
+
+                // Show success modal
+                checkoutModalEl.classList.add('hidden');
+                orderSuccessModal.classList.remove('hidden');
+                
+                // Reset cart
+                cartItems = [];
+                localStorage.setItem('ecoYugCart', JSON.stringify(cartItems));
+                updateCartCount();
+                renderShoppingCart();
+            }, 2000);
+        }
+        
+        // Simulate sending order confirmation email
+        function sendOrderConfirmationEmail(order) {
+            const email = order.customer.email;
+            const subject = `Подтверждение заказа #${order.id}`;
+            const itemsList = order.items.map(item => 
+                `${item.name} - ${item.quantity} × ${formatPrice(item.price)} = ${formatPrice(item.price * item.quantity)}`
+            ).join('\n');
+            
+            const body = `
+                Уважаемый(ая) ${order.customer.name},\n\n
+                Благодарим вас за заказ в магазине "ЭкоЮг"!\n\n
+                Номер вашего заказа: #${order.id}\n
+                Дата заказа: ${new Date(order.date).toLocaleDateString('ru-RU')}\n\n
+                Состав заказа:\n${itemsList}\n\n
+                Доставка: ${formatPrice(order.deliveryFee)}\n
+                Итого: ${formatPrice(order.subtotal + order.deliveryFee)}\n\n
+                Адрес доставки: ${order.customer.address}\n
+                Способ оплаты: ${order.paymentMethod}\n\n
+                Статус заказа: ${order.status}\n\n
+                Если у вас есть вопросы, пожалуйста, свяжитесь с нами по телефону +7 (861) 123-45-67 или ответьте на это письмо.\n\n
+                С уважением,\n
+                Команда "ЭкоЮг"
+            `;
+            
+            // In a real app, this would actually send an email via a backend service
+            console.log(`Email sent to: ${email}`);
+            console.log(`Subject: ${subject}`);
+            console.log(`Body: ${body}`);
+        }
+
+        // Render eco tips
+        function renderEcoTips() {
+            const tips = [
+                {
+                    title: 'Как сократить пластиковые отходы',
+                    content: 'Используйте многоразовые бутылки для воды, сумки для покупок и контейнеры для еды.'
+                },
+                {
+                    title: 'Эко-уборка дома',
+                    content: 'Замените обычные чистящие средства на экологичные альтернативы без вредных химикатов.'
+                },
+                {
+                    title: 'Экономия воды',
+                    content: 'Установите аэраторы на краны и принимайте душ вместо ванны для сокращения расхода воды.'
+                }
+            ];
+
+            ecoTipsEl.innerHTML = `
+                <h3 class="font-bold text-lg mb-4">Эко-советы</h3>
+                <div class="space-y-4">
+                    ${tips.map((tip, index) => `
+                        <div class="p-4 bg-secondary/20 rounded-lg border border-border">
+                            <h4 class="font-semibold mb-2">${tip.title}</h4>
+                            <p class="text-sm text-muted-foreground">${tip.content}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <h4 class="font-semibold mb-2 text-primary">Ваш экологический вклад</h4>
+                    <p class="text-sm text-muted-foreground">
+                        Благодаря вашим покупкам вы уже сэкономили ${cartItems.length * 3} пластиковых изделий!
+                    </p>
+                </div>
+            `;
+        }
+
+        // Show product modal
+        function showProductModal(productId) {
+            const product = ecoProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            const modalHtml = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fadeIn">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h2 class="text-2xl font-bold">${product.name}</h2>
+                            <button class="close-modal p-1 rounded-full hover:bg-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+                                    <path d="M18 6 6 18"></path>
+                                    <path d="m6 6 12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-grow p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <div class="flex items-center mb-4">
+                                        <div class="flex">
+                                            ${'★'.repeat(product.ecoRating)}${'☆'.repeat(5 - product.ecoRating)}
+                                        </div>
+                                        <span class="ml-2 text-sm text-muted-foreground">Эко-рейтинг</span>
+                                    </div>
+                                    
+                                    <p class="mb-6">${product.description}</p>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <h4 class="font-semibold">Категория</h4>
+                                            <p class="text-muted-foreground">${product.category}</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold">Доступные варианты</h4>
+                                            <p class="text-muted-foreground">${product.sizes.join(', ')}</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold">Цена</h4>
+                                            <p class="text-2xl font-bold text-primary">${formatPrice(product.price)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 border-t flex justify-end gap-4">
+                            <button class="close-modal px-6 py-3 border rounded-lg hover:bg-secondary transition-colors">Закрыть</button>
+                            <button data-product-id="${product.id}" class="add-to-cart-modal px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-button">
+                                Добавить в корзину
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+
+            // Add event listeners
+            modalContainer.querySelectorAll('.close-modal').forEach(button => {
+                button.addEventListener('click', () => {
+                    modalContainer.remove();
+                });
+            });
+
+            modalContainer.querySelector('.add-to-cart-modal').addEventListener('click', () => {
+                addToCart(product.id);
+                modalContainer.remove();
+            });
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            toastMessageEl.textContent = message;
+            
+            // Set style based on type
+            if (type === 'error') {
+                toastEl.className = 'fixed bottom-4 right-4 p-4 rounded-lg shadow-lg bg-destructive text-white flex items-center animate-fadeIn';
+            } else {
+                toastEl.className = 'fixed bottom-4 right-4 p-4 rounded-lg shadow-lg bg-primary text-white flex items-center animate-fadeIn';
+            }
+            
+            toastEl.classList.remove('hidden');
+            
+            // Hide after delay
+            setTimeout(() => {
+                toastEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <script type="text/javascript">
+     (function(){
+       emailjs.init({
+        publicKey: "NneXOUI1xY0MVJl8k",
+      });
+   })();
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+    // Инициализация EmailJS
+    (function() {
+        emailjs.init({
+            publicKey: "NneXOUI1xY0MVJl8k",
+        });
+    })();
+
+    // Функция для форматирования цены
+    function formatPrice(price) {
+        return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price);
+    }
+
+    // Функция для отправки email с данными заказа
+    async function sendOrderEmail(order) {
+        try {
+            // Рассчитываем примерную дату доставки (3-5 рабочих дней)
+            const deliveryDate = new Date();
+            deliveryDate.setDate(deliveryDate.getDate() + 3 + Math.floor(Math.random() * 3));
+            const deliveryDateStr = deliveryDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            const emailParams = {
+                name: order.customer.name,
+                address: order.customer.address,
+                city: order.customer.address.split(',')[0].trim(),
+                zip: order.customer.address.split(',')[1].trim(),
+                phone: order.customer.phone,
+                email: order.customer.email,
+                order_id: order.id,
+                order_date: new Date(order.date).toLocaleDateString('ru-RU'),
+                order_items: order.items.map(item => 
+                    `${item.name} - ${item.quantity} шт. × ${formatPrice(item.price)} = ${formatPrice(item.price * item.quantity)}`
+                ).join('<br>'),
+                subtotal: formatPrice(order.subtotal),
+                delivery: order.deliveryFee === 0 ? 'Бесплатно' : formatPrice(order.deliveryFee),
+                total: formatPrice(order.subtotal + order.deliveryFee),
+                payment_method: order.paymentMethod,
+                delivery_period: `Доставка ожидается ${deliveryDateStr}`,
+                delivery_info: "Доставка осуществляется курьерской службой в течение 3-5 рабочих дней. Вы получите SMS-уведомление с номером отслеживания, когда заказ будет передан в доставку."
+            };
+
+            await emailjs.send(
+                "service_v17hiaa", 
+                "template_3iss86r", 
+                emailParams
+            );
+            
+            return true;
+        } catch (error) {
+            console.error('Ошибка отправки email:', error);
+            return false;
+        }
+    }
+
+    // Обновленная функция handlePlaceOrder
+    async function handlePlaceOrder() {
+        const name = document.getElementById('name').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const paymentMethod = document.querySelector('input[name="payment"]:checked').id;
+
+        // Валидация
+        if (!name || !address || !city || !zip || !phone || !email) {
+            showToast('Пожалуйста, заполните все обязательные поля', 'error');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showToast('Пожалуйста, введите корректный email', 'error');
+            return;
+        }
+
+        if (!/^(\+7|8)[0-9]{10}$/.test(phone.replace(/[^0-9+]/g, ''))) {
+            showToast('Пожалуйста, введите корректный номер телефона', 'error');
+            return;
+        }
+
+        if (paymentMethod === 'card-payment') {
+            const cardNumber = document.getElementById('card-number').value.trim();
+            const expiry = document.getElementById('expiry').value.trim();
+            const cvc = document.getElementById('cvc').value.trim();
+
+            if (!cardNumber || !expiry || !cvc) {
+                showToast('Пожалуйста, заполните данные карты', 'error');
+                return;
+            }
+
+            if (!/^\d{16}$/.test(cardNumber.replace(/\s/g, ''))) {
+                showToast('Пожалуйста, введите корректный номер карты', 'error');
+                return;
+            }
+
+            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                showToast('Пожалуйста, введите корректный срок действия (MM/YY)', 'error');
+                return;
+            }
+
+            if (!/^\d{3,4}$/.test(cvc)) {
+                showToast('Пожалуйста, введите корректный CVC код', 'error');
+                return;
+            }
+        }
+
+        // Показать спиннер загрузки
+        orderSpinner.classList.remove('hidden');
+        placeOrderBtn.disabled = true;
+
+        try {
+            // Создание объекта заказа
+            const order = {
+                id: 'ECO-' + Date.now().toString().slice(-6),
+                date: new Date().toISOString(),
+                items: cartItems,
+                customer: {
+                    name,
+                    email,
+                    phone,
+                    address: `${city}, ${zip}, ${address}`
+                },
+                paymentMethod: paymentMethod === 'card-payment' ? 'Карта' : 'Наличные',
+                subtotal: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                deliveryFee: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 5000 ? 0 : 300,
+                status: 'Обрабатывается'
+            };
+
+            // Сохранение заказа
+            const orders = JSON.parse(localStorage.getItem('ecoYugOrders')) || [];
+            orders.push(order);
+            localStorage.setItem('ecoYugOrders', JSON.stringify(orders));
+
+            // Отправка email
+            const emailSent = await sendOrderEmail(order);
+            if (!emailSent) {
+                showToast('Заказ оформлен, но не удалось отправить подтверждение', 'error');
+            }
+
+            // Показать модальное окно успеха
+            checkoutModalEl.classList.add('hidden');
+            orderSuccessModal.classList.remove('hidden');
+            
+            // Очистка корзины
+            cartItems = [];
+            localStorage.setItem('ecoYugCart', JSON.stringify(cartItems));
+            updateCartCount();
+            renderShoppingCart();
+            
+        } catch (error) {
+            console.error('Ошибка оформления заказа:', error);
+            showToast('Произошла ошибка при оформлении заказа', 'error');
+        } finally {
+            orderSpinner.classList.add('hidden');
+            placeOrderBtn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
